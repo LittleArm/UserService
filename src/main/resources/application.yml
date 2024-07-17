@@ -9,4 +9,4 @@ springdoc:
 
 server:
   servlet:
-    context-path: /api/user/
+    context-path: /api/
