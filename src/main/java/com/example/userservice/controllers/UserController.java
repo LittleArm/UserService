@@ -80,8 +80,7 @@ public class UserController {
             @PathVariable String email,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
     ) {
-        String jwtToken = authorizationHeader.substring(7);
-        service.deleteUserByEmail(email, jwtToken);
+        service.deleteUserByEmail(email);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

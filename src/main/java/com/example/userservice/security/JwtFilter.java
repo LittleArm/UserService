@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -47,6 +46,25 @@ public class JwtFilter extends OncePerRequestFilter {
         final String userEmail = jwtService.extractUsername(jwt);
         final List<String> authority = jwtService.extractAuthorities(jwt);
 
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = null;
+            if (!authority.contains("ADMIN")) {
+                userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            }
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                JwtAuthenticationToken authToken = new JwtAuthenticationToken(
+                        userDetails,
+                        null,
+                        jwt,
+                        authority.contains("ADMIN") ? List.of(() -> "ROLE_ADMIN") : userDetails.getAuthorities()
+                );
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+
         if (request.getMethod().equals("DELETE")) {
             if (authority.contains("ADMIN")){
                 filterChain.doFilter(request, response);
@@ -55,20 +73,6 @@ public class JwtFilter extends OncePerRequestFilter {
             throw new IllegalStateException("No authority");
         }
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
         filterChain.doFilter(request, response);
     }
 }

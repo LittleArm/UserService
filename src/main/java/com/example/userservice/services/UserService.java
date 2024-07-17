@@ -149,10 +149,10 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUserByEmail(String email, String jwtToken) {
-        EmployeeDTO employeeDTO = employeeServiceClient.getEmployeeByEmail(email, jwtToken);
+    public void deleteUserByEmail(String email) {
+        EmployeeDTO employeeDTO = employeeServiceClient.getEmployeeByEmail(email);
         if (employeeDTO != null) {
-            employeeServiceClient.deleteEmployee(employeeDTO, jwtToken);
+            employeeServiceClient.deleteEmployee(employeeDTO);
         }
         User deleteUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
