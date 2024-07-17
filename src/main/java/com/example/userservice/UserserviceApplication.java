@@ -1,7 +1,7 @@
 package com.example.userservice;
 
-import com.example.userservice.model.Role;
-import com.example.userservice.repository.RoleRepository;
+import com.example.userservice.models.Role;
+import com.example.userservice.repositories.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
