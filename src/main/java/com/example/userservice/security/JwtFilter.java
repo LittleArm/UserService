@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -28,19 +29,32 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        if (request.getServletPath().contains("/auth")) {
+        String servletPath = request.getServletPath();
+
+        if (servletPath.contains("/users") && request.getMethod().equals("POST") ||
+                servletPath.contains("/users") && request.getMethod().equals("GET")) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        if (servletPath.contains("/swagger-ui") || servletPath.contains("/v3")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-        jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
+        final String jwt = authHeader.substring(7);
+        final String userEmail = jwtService.extractUsername(jwt);
+        final List<String> authority = jwtService.extractAuthorities(jwt);
+
+        if (request.getMethod().equals("DELETE")) {
+            if (authority.contains("ADMIN")){
+                filterChain.doFilter(request, response);
+                return;
+            }
+            throw new IllegalStateException("No authority");
+        }
+
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
