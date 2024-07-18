@@ -149,14 +149,15 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUserByEmail(String email) {
-        EmployeeDTO employeeDTO = employeeServiceClient.getEmployeeByEmail(email);
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        EmployeeDTO employeeDTO = employeeServiceClient.getEmployeeByEmail(user.getEmail());
         if (employeeDTO != null) {
             employeeServiceClient.deleteEmployee(employeeDTO);
         }
-        User deleteUser = userRepository.findByEmail(email)
+        User deleteUser = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        Long id = deleteUser.getId();
         deleteUser.getRoles().clear();
         userRepository.save(deleteUser);
         tokenRepository.deleteByUserId(id);
@@ -168,6 +169,7 @@ public class UserService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
+                .password(user.getPassword())
                 .build();
     }
 }

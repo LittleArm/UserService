@@ -52,11 +52,11 @@ public class UserController {
     }
 
     @GetMapping("/activate")
-    public ResponseEntity<Void> confirm(
+    public ResponseEntity<String> confirm(
             @RequestParam String token
     ) throws MessagingException {
         service.activateAccount(token);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(token);
     }
 
     @GetMapping("/{email}")
@@ -75,12 +75,12 @@ public class UserController {
         return ResponseEntity.ok(updateUser);
     }
 
-    @DeleteMapping("/{email}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
-            @PathVariable String email,
+            @PathVariable Long id,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
     ) {
-        service.deleteUserByEmail(email);
+        service.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

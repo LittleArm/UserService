@@ -42,7 +42,7 @@ public class EmployeeServiceClient {
     public void deleteEmployee(EmployeeDTO employeeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String jwtToken = ((JwtAuthenticationToken) authentication).getToken();
-        String url = employeeServiceUrl + "/employees/" + employeeDTO.getEmail();
+        String url = employeeServiceUrl + "/employees/" + employeeDTO.getId();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + jwtToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
